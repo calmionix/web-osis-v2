@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Galeri | Admin OSIS MTs Darul Hikam Cirebon</title>
+  <meta name="description" content="Kelola Galeri OSIS MTs Darul Hikam Cirebon">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#1a5f2a',
+              light: '#2d7a3e',
+              dark: '#124a1f',
+            },
+            secondary: {
+              DEFAULT: '#d4af37',
+              light: '#e8c547',
+              dark: '#b8960c',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Poppins', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/navbar-footer.css">
+  
+  <style>
+    .admin-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 280px;
+      background: white;
+      border-right: 1px solid var(--border-color);
+      z-index: 1000;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+    
+    .admin-sidebar.open {
+      transform: translateX(0);
+    }
+    
+    .admin-main {
+      margin-left: 280px;
+      min-height: 100vh;
+      transition: margin-left 0.3s ease;
+    }
+    
+    .admin-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: white;
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 1.5rem;
+    }
+    
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.5rem;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+    
+    .admin-nav-item:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    
+    .admin-nav-item.active {
+      background: rgba(26, 95, 42, 0.1);
+      color: var(--primary);
+      border-left-color: var(--primary);
+    }
+    
+    @media (max-width: 1024px) {
+      .admin-sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .admin-main {
+        margin-left: 0;
+      }
+    }
+    
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .mobile-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .upload-preview {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--bg-tertiary);
+      border: 2px dashed var(--border-color);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .upload-preview:hover {
+      border-color: var(--primary);
+    }
+    
+    .upload-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .upload-preview.has-image {
+      border-style: solid;
+      border-color: var(--primary);
+    }
+    
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .gallery-item {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s ease;
+    }
+    
+    .gallery-item:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
+    }
+    
+    .gallery-item img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+    
+    .gallery-item-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .gallery-item:hover .gallery-item-overlay {
+      opacity: 1;
+    }
+    
+    .gallery-item-title {
+      color: white;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .gallery-item-category {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.875rem;
+    }
+    
+    .gallery-item-actions {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .gallery-item-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .gallery-item-btn:hover {
+      transform: scale(1.1);
+    }
+    
+    .gallery-item-btn.edit {
+      color: var(--info);
+    }
+    
+    .gallery-item-btn.delete {
+      color: var(--error);
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Overlay -->
+  <div class="mobile-overlay" id="mobile-overlay" onclick="toggleSidebar()"></div>
+  
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar" id="admin-sidebar">
+    <div class="p-6 border-b border-gray-200">
+      <a href="/" class="flex items-center gap-3">
+        <img src="../uploads/logo.png" alt="Logo" class="w-10 h-10 rounded-lg" onerror="this.src='https://via.placeholder.com/48x48/1a5f2a/ffffff?text=DH'">
+        <div>
+          <h2 class="font-bold text-lg leading-tight">OSIS Admin</h2>
+          <p class="text-xs text-gray-500">MTs Darul Hikam</p>
+        </div>
+      </a>
+    </div>
+    
+    <div class="px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+          A
+        </div>
+        <div>
+          <p class="font-medium text-sm">Admin</p>
+          <p class="text-xs text-gray-500">admin.osis.dhc</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="py-4">
+      <a href="dashboard.html" class="admin-nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        Dashboard
+      </a>
+      <a href="pengurus.html" class="admin-nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        Pengurus
+      </a>
+      <a href="galeri.html" class="admin-nav-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+        Galeri
+      </a>
+      
+      <div class="border-t border-gray-200 mt-4 pt-4">
+        <a href="/" class="admin-nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Lihat Website
+        </a>
+        <button class="admin-nav-item w-full text-left" onclick="logout()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Logout
+        </button>
+      </div>
+    </nav>
+  </aside>
+  
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-header flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button class="lg:hidden p-2 hover:bg-gray-100 rounded-lg" onclick="toggleSidebar()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h1 class="text-xl font-semibold">Kelola Galeri</h1>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Upload Foto
+      </button>
+    </header>
+    
+    <div class="p-6">
+      <!-- Filter -->
+      <div class="flex flex-wrap gap-3 mb-6">
+        <button class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white" data-filter="all">
+          Semua
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all" data-filter="keagamaan">
+          Keagamaan
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all" data-filter="akademik">
+          Akademik
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all" data-filter="seni">
+          Seni & Budaya
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all" data-filter="olahraga">
+          Olahraga
+        </button>
+      </div>
+      
+      <!-- Gallery Grid -->
+      <div id="gallery-grid" class="gallery-grid">
+        <!-- Data will be loaded here -->
+      </div>
+      
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state hidden">
+        <div class="empty-state-icon">📭</div>
+        <h3 class="empty-state-title">Belum ada foto</h3>
+        <p class="empty-state-text">Silakan upload foto ke galeri terlebih dahulu.</p>
+        <button class="btn btn-primary" onclick="openModal()">Upload Foto</button>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Upload Modal -->
+  <div class="modal-overlay" id="modal-form">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Upload Foto</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      
+      <form id="galeri-form" onsubmit="saveGaleri(event)">
+        <input type="hidden" id="galeri-id">
+        
+        <!-- Foto Upload -->
+        <div class="mb-4">
+          <label class="form-label">Foto <span class="text-red-500">*</span></label>
+          <div class="upload-preview" id="upload-preview" onclick="document.getElementById('foto-input').click()">
+            <div class="upload-preview-placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <p class="text-sm mt-2">Klik untuk upload foto</p>
+              <p class="text-xs">JPG, PNG, WebP (Max 5MB)</p>
+            </div>
+          </div>
+          <input type="file" id="foto-input" class="hidden" accept="image/*" onchange="previewImage(event)" required>
+          <input type="hidden" id="foto-base64">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Judul Foto <span class="text-red-500">*</span></label>
+          <input type="text" id="judul" class="form-input" placeholder="Masukkan judul foto" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Kategori <span class="text-red-500">*</span></label>
+          <select id="kategori" class="form-select" required>
+            <option value="">Pilih Kategori</option>
+            <option value="keagamaan">Keagamaan</option>
+            <option value="akademik">Akademik</option>
+            <option value="seni">Seni & Budaya</option>
+            <option value="olahraga">Olahraga</option>
+            <option value="lainnya">Lainnya</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Deskripsi</label>
+          <textarea id="deskripsi" class="form-textarea" rows="3" placeholder="Deskripsi foto (opsional)"></textarea>
+        </div>
+        
+        <div class="flex gap-3">
+          <button type="button" class="btn btn-outline flex-1" onclick="closeModal()">Batal</button>
+          <button type="submit" class="btn btn-primary flex-1">
+            <span id="btn-simpan">Upload</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="modal-delete">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center text-3xl">
+          🗑️
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Hapus Foto?</h3>
+        <p class="text-gray-600 mb-6">Foto akan dihapus permanen dari galeri. Apakah Anda yakin?</p>
+        <div class="flex gap-3">
+          <button class="btn btn-outline flex-1" onclick="closeDeleteModal()">Batal</button>
+          <button class="btn btn-primary bg-red-500 border-red-500 hover:bg-red-600 flex-1" onclick="confirmDelete()">Hapus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Image Preview Modal -->
+  <div class="modal-overlay" id="modal-preview" onclick="closePreviewModal()">
+    <div class="modal-content" style="max-width: 90%; max-height: 90vh; padding: 0; overflow: hidden;" onclick="event.stopPropagation()">
+      <button class="absolute top-4 right-4 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center z-10" onclick="closePreviewModal()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <img id="preview-image" src="" alt="Preview" class="w-full h-full object-contain">
+    </div>
+  </div>
+  
+  <script src="../js/main.js"></script>
+  
+  <script>
+    // Auth Check
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!AuthManager.isAuthenticated()) {
+        window.location.href = '/?login=required';
+        return;
+      }
+      
+      loadGaleri();
+      setupFilters();
+    });
+    
+    let deleteId = null;
+    
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Ukuran file maksimal 5MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById('upload-preview');
+        const base64 = e.target.result;
+        
+        preview.innerHTML = `<img src="${base64}" alt="Preview">`;
+        preview.classList.add('has-image');
+        document.getElementById('foto-base64').value = base64;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function loadGaleri(filter = 'all') {
+      const galeri = JSON.parse(localStorage.getItem('osis_galeri') || '[]');
+      const grid = document.getElementById('gallery-grid');
+      const emptyState = document.getElementById('empty-state');
+      
+      const filtered = filter === 'all' ? galeri : galeri.filter(g => g.kategori === filter);
+      
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      
+      grid.innerHTML = filtered.map(g => `
+        <div class="gallery-item">
+          <img src="${g.foto}" alt="${g.judul}" onclick="previewFullImage('${g.foto}')">
+          <div class="gallery-item-overlay">
+            <h4 class="gallery-item-title">${g.judul}</h4>
+            <span class="gallery-item-category">${getKategoriLabel(g.kategori)}</span>
+          </div>
+          <div class="gallery-item-actions">
+            <button class="gallery-item-btn edit" onclick="editGaleri('${g.id}')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="gallery-item-btn delete" onclick="deleteGaleri('${g.id}')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getKategoriLabel(kategori) {
+      const labels = {
+        keagamaan: 'Keagamaan',
+        akademik: 'Akademik',
+        seni: 'Seni & Budaya',
+        olahraga: 'Olahraga',
+        lainnya: 'Lainnya'
+      };
+      return labels[kategori] || kategori;
+    }
+    
+    function setupFilters() {
+      const buttons = document.querySelectorAll('.filter-btn');
+      
+      buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          buttons.forEach(b => {
+            b.classList.remove('active', 'bg-primary', 'text-white');
+            b.classList.add('bg-gray-100', 'text-gray-600');
+          });
+          this.classList.add('active', 'bg-primary', 'text-white');
+          this.classList.remove('bg-gray-100', 'text-gray-600');
+          
+          loadGaleri(this.dataset.filter);
+        });
+      });
+    }
+    
+    function openModal() {
+      document.getElementById('modal-form').classList.add('active');
+      document.getElementById('modal-title').textContent = 'Upload Foto';
+      document.getElementById('galeri-form').reset();
+      document.getElementById('galeri-id').value = '';
+      document.getElementById('foto-base64').value = '';
+      document.getElementById('btn-simpan').textContent = 'Upload';
+      document.getElementById('foto-input').required = true;
+      
+      // Reset preview
+      const preview = document.getElementById('upload-preview');
+      preview.innerHTML = `
+        <div class="upload-preview-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <p class="text-sm mt-2">Klik untuk upload foto</p>
+          <p class="text-xs">JPG, PNG, WebP (Max 5MB)</p>
+        </div>
+      `;
+      preview.classList.remove('has-image');
+    }
+    
+    function closeModal() {
+      document.getElementById('modal-form').classList.remove('active');
+    }
+    
+    function editGaleri(id) {
+      const galeri = JSON.parse(localStorage.getItem('osis_galeri') || '[]');
+      const g = galeri.find(item => item.id === id);
+      
+      if (!g) return;
+      
+      document.getElementById('modal-form').classList.add('active');
+      document.getElementById('modal-title').textContent = 'Edit Foto';
+      document.getElementById('galeri-id').value = g.id;
+      document.getElementById('judul').value = g.judul;
+      document.getElementById('kategori').value = g.kategori;
+      document.getElementById('deskripsi').value = g.deskripsi || '';
+      document.getElementById('foto-base64').value = g.foto;
+      document.getElementById('btn-simpan').textContent = 'Update';
+      document.getElementById('foto-input').required = false;
+      
+      // Set preview
+      const preview = document.getElementById('upload-preview');
+      preview.innerHTML = `<img src="${g.foto}" alt="Preview">`;
+      preview.classList.add('has-image');
+    }
+    
+    function saveGaleri(event) {
+      event.preventDefault();
+      
+      const id = document.getElementById('galeri-id').value;
+      const judul = document.getElementById('judul').value;
+      const kategori = document.getElementById('kategori').value;
+      const deskripsi = document.getElementById('deskripsi').value;
+      const foto = document.getElementById('foto-base64').value;
+      
+      if (!foto) {
+        alert('Silakan upload foto terlebih dahulu');
+        return;
+      }
+      
+      let galeri = JSON.parse(localStorage.getItem('osis_galeri') || '[]');
+      
+      if (id) {
+        // Update existing
+        const index = galeri.findIndex(g => g.id === id);
+        if (index !== -1) {
+          galeri[index] = { id, judul, kategori, deskripsi, foto, tanggal: galeri[index].tanggal };
+        }
+      } else {
+        // Add new
+        const newGaleri = {
+          id: Date.now().toString(),
+          judul,
+          kategori,
+          deskripsi,
+          foto,
+          tanggal: new Date().toISOString()
+        };
+        galeri.push(newGaleri);
+      }
+      
+      localStorage.setItem('osis_galeri', JSON.stringify(galeri));
+      
+      closeModal();
+      loadGaleri();
+      
+      showNotification('success', id ? 'Foto berhasil diupdate!' : 'Foto berhasil diupload!');
+    }
+    
+    function deleteGaleri(id) {
+      deleteId = id;
+      document.getElementById('modal-delete').classList.add('active');
+    }
+    
+    function closeDeleteModal() {
+      document.getElementById('modal-delete').classList.remove('active');
+      deleteId = null;
+    }
+    
+    function confirmDelete() {
+      if (!deleteId) return;
+      
+      let galeri = JSON.parse(localStorage.getItem('osis_galeri') || '[]');
+      galeri = galeri.filter(g => g.id !== deleteId);
+      localStorage.setItem('osis_galeri', JSON.stringify(galeri));
+      
+      closeDeleteModal();
+      loadGaleri();
+      showNotification('success', 'Foto berhasil dihapus!');
+    }
+    
+    function previewFullImage(src) {
+      document.getElementById('preview-image').src = src;
+      document.getElementById('modal-preview').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closePreviewModal() {
+      document.getElementById('modal-preview').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    
+    function showNotification(type, message) {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type}`;
+      notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+      `;
+      notification.innerHTML = `
+        <span>${type === 'success' ? '✅' : 'ℹ️'}</span>
+        <span>${message}</span>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideInRight 0.3s ease reverse';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+    
+    function toggleSidebar() {
+      const sidebar = document.getElementById('admin-sidebar');
+      const overlay = document.getElementById('mobile-overlay');
+      
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+    
+    function logout() {
+      if (confirm('Apakah Anda yakin ingin logout?')) {
+        AuthManager.logout();
+      }
+    }
+  </script>
+</body>
+</html>

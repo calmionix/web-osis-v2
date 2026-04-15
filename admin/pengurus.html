@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Pengurus | Admin OSIS MTs Darul Hikam Cirebon</title>
+  <meta name="description" content="Kelola Pengurus OSIS MTs Darul Hikam Cirebon">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#1a5f2a',
+              light: '#2d7a3e',
+              dark: '#124a1f',
+            },
+            secondary: {
+              DEFAULT: '#d4af37',
+              light: '#e8c547',
+              dark: '#b8960c',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Poppins', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/navbar-footer.css">
+  
+  <style>
+    .admin-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 280px;
+      background: white;
+      border-right: 1px solid var(--border-color);
+      z-index: 1000;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+    
+    .admin-sidebar.open {
+      transform: translateX(0);
+    }
+    
+    .admin-main {
+      margin-left: 280px;
+      min-height: 100vh;
+      transition: margin-left 0.3s ease;
+    }
+    
+    .admin-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: white;
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 1.5rem;
+    }
+    
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.5rem;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+    
+    .admin-nav-item:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    
+    .admin-nav-item.active {
+      background: rgba(26, 95, 42, 0.1);
+      color: var(--primary);
+      border-left-color: var(--primary);
+    }
+    
+    @media (max-width: 1024px) {
+      .admin-sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .admin-main {
+        margin-left: 0;
+      }
+    }
+    
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .mobile-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .upload-preview {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: var(--bg-tertiary);
+      border: 2px dashed var(--border-color);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .upload-preview:hover {
+      border-color: var(--primary);
+    }
+    
+    .upload-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .upload-preview.has-image {
+      border-style: solid;
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Overlay -->
+  <div class="mobile-overlay" id="mobile-overlay" onclick="toggleSidebar()"></div>
+  
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar" id="admin-sidebar">
+    <div class="p-6 border-b border-gray-200">
+      <a href="/" class="flex items-center gap-3">
+        <img src="../uploads/logo.png" alt="Logo" class="w-10 h-10 rounded-lg" onerror="this.src='https://via.placeholder.com/48x48/1a5f2a/ffffff?text=DH'">
+        <div>
+          <h2 class="font-bold text-lg leading-tight">OSIS Admin</h2>
+          <p class="text-xs text-gray-500">MTs Darul Hikam</p>
+        </div>
+      </a>
+    </div>
+    
+    <div class="px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+          A
+        </div>
+        <div>
+          <p class="font-medium text-sm">Admin</p>
+          <p class="text-xs text-gray-500">admin.osis.dhc</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="py-4">
+      <a href="dashboard.html" class="admin-nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        Dashboard
+      </a>
+      <a href="pengurus.html" class="admin-nav-item active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        Pengurus
+      </a>
+      <a href="galeri.html" class="admin-nav-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+        Galeri
+      </a>
+      
+      <div class="border-t border-gray-200 mt-4 pt-4">
+        <a href="/" class="admin-nav-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Lihat Website
+        </a>
+        <button class="admin-nav-item w-full text-left" onclick="logout()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Logout
+        </button>
+      </div>
+    </nav>
+  </aside>
+  
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-header flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button class="lg:hidden p-2 hover:bg-gray-100 rounded-lg" onclick="toggleSidebar()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h1 class="text-xl font-semibold">Kelola Pengurus</h1>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Tambah Pengurus
+      </button>
+    </header>
+    
+    <div class="p-6">
+      <!-- Filter -->
+      <div class="flex flex-wrap gap-3 mb-6">
+        <button class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white" data-filter="all">
+          Semua
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all" data-filter="inti">
+          Pengurus Inti
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all" data-filter="keagamaan">
+          Bidang Keagamaan
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all" data-filter="akademik">
+          Bidang Akademik
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all" data-filter="seni">
+          Bidang Seni
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all" data-filter="olahraga">
+          Bidang Olahraga
+        </button>
+      </div>
+      
+      <!-- Pengurus Grid -->
+      <div id="pengurus-grid" class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Data will be loaded here -->
+      </div>
+      
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state hidden">
+        <div class="empty-state-icon">📭</div>
+        <h3 class="empty-state-title">Belum ada pengurus</h3>
+        <p class="empty-state-text">Silakan tambah pengurus OSIS terlebih dahulu.</p>
+        <button class="btn btn-primary" onclick="openModal()">Tambah Pengurus</button>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Modal Form -->
+  <div class="modal-overlay" id="modal-form">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Tambah Pengurus</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      
+      <form id="pengurus-form" onsubmit="savePengurus(event)">
+        <input type="hidden" id="pengurus-id">
+        
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- Foto Upload -->
+          <div>
+            <label class="form-label">Foto Pengurus</label>
+            <div class="upload-preview" id="upload-preview" onclick="document.getElementById('foto-input').click()">
+              <div class="upload-preview-placeholder">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <p class="text-sm mt-2">Klik untuk upload foto</p>
+                <p class="text-xs">JPG, PNG, WebP</p>
+              </div>
+            </div>
+            <input type="file" id="foto-input" class="hidden" accept="image/*" onchange="previewImage(event)">
+            <input type="hidden" id="foto-base64">
+          </div>
+          
+          <!-- Form Fields -->
+          <div class="space-y-4">
+            <div class="form-group mb-0">
+              <label class="form-label">Nama Lengkap</label>
+              <input type="text" id="nama" class="form-input" placeholder="Masukkan nama lengkap" required>
+            </div>
+            
+            <div class="form-group mb-0">
+              <label class="form-label">Kategori</label>
+              <select id="kategori" class="form-select" required onchange="updateJabatanOptions()">
+                <option value="">Pilih Kategori</option>
+                <option value="inti">Pengurus Inti</option>
+                <option value="keagamaan">Bidang Keagamaan</option>
+                <option value="akademik">Bidang Akademik</option>
+                <option value="seni">Bidang Seni</option>
+                <option value="olahraga">Bidang Olahraga</option>
+              </select>
+            </div>
+            
+            <div class="form-group mb-0">
+              <label class="form-label">Jabatan</label>
+              <select id="jabatan" class="form-select" required>
+                <option value="">Pilih Jabatan</option>
+              </select>
+            </div>
+            
+            <div class="form-group mb-0">
+              <label class="form-label">Kelas</label>
+              <select id="kelas" class="form-select" required>
+                <option value="VII">VII</option>
+                <option value="VIII" selected>VIII</option>
+                <option value="IX">IX</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex gap-3 mt-6">
+          <button type="button" class="btn btn-outline flex-1" onclick="closeModal()">Batal</button>
+          <button type="submit" class="btn btn-primary flex-1">
+            <span id="btn-simpan">Simpan</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="modal-delete">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center text-3xl">
+          🗑️
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Hapus Pengurus?</h3>
+        <p class="text-gray-600 mb-6">Data pengurus akan dihapus permanen. Apakah Anda yakin?</p>
+        <div class="flex gap-3">
+          <button class="btn btn-outline flex-1" onclick="closeDeleteModal()">Batal</button>
+          <button class="btn btn-primary bg-red-500 border-red-500 hover:bg-red-600 flex-1" onclick="confirmDelete()">Hapus</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="../js/main.js"></script>
+  
+  <script>
+    // Auth Check
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!AuthManager.isAuthenticated()) {
+        window.location.href = '/?login=required';
+        return;
+      }
+      
+      loadPengurus();
+      setupFilters();
+    });
+    
+    let deleteId = null;
+    const jabatanOptions = {
+      inti: ['Ketua OSIS', 'Wakil Ketua OSIS', 'Sekretaris', 'Bendahara'],
+      keagamaan: ['Ketua Bidang Keagamaan', 'Anggota Bidang Keagamaan'],
+      akademik: ['Ketua Bidang Akademik', 'Anggota Bidang Akademik'],
+      seni: ['Ketua Bidang Seni', 'Anggota Bidang Seni'],
+      olahraga: ['Ketua Bidang Olahraga', 'Anggota Bidang Olahraga']
+    };
+    
+    function updateJabatanOptions() {
+      const kategori = document.getElementById('kategori').value;
+      const jabatanSelect = document.getElementById('jabatan');
+      
+      jabatanSelect.innerHTML = '<option value="">Pilih Jabatan</option>';
+      
+      if (kategori && jabatanOptions[kategori]) {
+        jabatanOptions[kategori].forEach(jabatan => {
+          const option = document.createElement('option');
+          option.value = jabatan;
+          option.textContent = jabatan;
+          jabatanSelect.appendChild(option);
+        });
+      }
+    }
+    
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById('upload-preview');
+        const base64 = e.target.result;
+        
+        preview.innerHTML = `<img src="${base64}" alt="Preview">`;
+        preview.classList.add('has-image');
+        document.getElementById('foto-base64').value = base64;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function loadPengurus(filter = 'all') {
+      const pengurus = JSON.parse(localStorage.getItem('osis_pengurus') || '[]');
+      const grid = document.getElementById('pengurus-grid');
+      const emptyState = document.getElementById('empty-state');
+      
+      const filtered = filter === 'all' ? pengurus : pengurus.filter(p => p.kategori === filter);
+      
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      
+      grid.innerHTML = filtered.map(p => `
+        <div class="card overflow-hidden">
+          <div class="relative">
+            <div class="aspect-[3/4] bg-gray-100">
+              <img src="${p.foto || 'https://via.placeholder.com/300x400/1a5f2a/ffffff?text=' + p.nama.charAt(0)}" 
+                   alt="${p.nama}" 
+                   class="w-full h-full object-cover">
+            </div>
+            <div class="absolute top-3 right-3">
+              <span class="badge ${getKategoriBadgeClass(p.kategori)}">${p.kategori}</span>
+            </div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-semibold text-lg mb-1">${p.nama}</h3>
+            <p class="text-primary text-sm mb-1">${p.jabatan}</p>
+            <p class="text-gray-500 text-sm">Kelas ${p.kelas}</p>
+            
+            <div class="flex gap-2 mt-4">
+              <button class="btn btn-outline btn-sm flex-1" onclick="editPengurus('${p.id}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edit
+              </button>
+              <button class="btn btn-outline btn-sm text-red-500 border-red-500 hover:bg-red-50" onclick="deletePengurus('${p.id}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getKategoriBadgeClass(kategori) {
+      const classes = {
+        inti: 'bg-primary text-white',
+        keagamaan: 'bg-purple-500 text-white',
+        akademik: 'bg-orange-500 text-white',
+        seni: 'bg-pink-500 text-white',
+        olahraga: 'bg-cyan-500 text-white'
+      };
+      return classes[kategori] || 'bg-gray-500 text-white';
+    }
+    
+    function setupFilters() {
+      const buttons = document.querySelectorAll('.filter-btn');
+      
+      buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          buttons.forEach(b => {
+            b.classList.remove('active', 'bg-primary', 'text-white');
+            b.classList.add('bg-gray-100', 'text-gray-600');
+          });
+          this.classList.add('active', 'bg-primary', 'text-white');
+          this.classList.remove('bg-gray-100', 'text-gray-600');
+          
+          loadPengurus(this.dataset.filter);
+        });
+      });
+    }
+    
+    function openModal() {
+      document.getElementById('modal-form').classList.add('active');
+      document.getElementById('modal-title').textContent = 'Tambah Pengurus';
+      document.getElementById('pengurus-form').reset();
+      document.getElementById('pengurus-id').value = '';
+      document.getElementById('foto-base64').value = '';
+      document.getElementById('btn-simpan').textContent = 'Simpan';
+      
+      // Reset preview
+      const preview = document.getElementById('upload-preview');
+      preview.innerHTML = `
+        <div class="upload-preview-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <p class="text-sm mt-2">Klik untuk upload foto</p>
+          <p class="text-xs">JPG, PNG, WebP</p>
+        </div>
+      `;
+      preview.classList.remove('has-image');
+      
+      updateJabatanOptions();
+    }
+    
+    function closeModal() {
+      document.getElementById('modal-form').classList.remove('active');
+    }
+    
+    function editPengurus(id) {
+      const pengurus = JSON.parse(localStorage.getItem('osis_pengurus') || '[]');
+      const p = pengurus.find(item => item.id === id);
+      
+      if (!p) return;
+      
+      document.getElementById('modal-form').classList.add('active');
+      document.getElementById('modal-title').textContent = 'Edit Pengurus';
+      document.getElementById('pengurus-id').value = p.id;
+      document.getElementById('nama').value = p.nama;
+      document.getElementById('kategori').value = p.kategori;
+      document.getElementById('kelas').value = p.kelas;
+      document.getElementById('foto-base64').value = p.foto || '';
+      document.getElementById('btn-simpan').textContent = 'Update';
+      
+      updateJabatanOptions();
+      document.getElementById('jabatan').value = p.jabatan;
+      
+      // Set preview
+      if (p.foto) {
+        const preview = document.getElementById('upload-preview');
+        preview.innerHTML = `<img src="${p.foto}" alt="Preview">`;
+        preview.classList.add('has-image');
+      }
+    }
+    
+    function savePengurus(event) {
+      event.preventDefault();
+      
+      const id = document.getElementById('pengurus-id').value;
+      const nama = document.getElementById('nama').value;
+      const kategori = document.getElementById('kategori').value;
+      const jabatan = document.getElementById('jabatan').value;
+      const kelas = document.getElementById('kelas').value;
+      const foto = document.getElementById('foto-base64').value;
+      
+      let pengurus = JSON.parse(localStorage.getItem('osis_pengurus') || '[]');
+      
+      if (id) {
+        // Update existing
+        const index = pengurus.findIndex(p => p.id === id);
+        if (index !== -1) {
+          pengurus[index] = { id, nama, kategori, jabatan, kelas, foto };
+        }
+      } else {
+        // Add new
+        const newPengurus = {
+          id: Date.now().toString(),
+          nama,
+          kategori,
+          jabatan,
+          kelas,
+          foto
+        };
+        pengurus.push(newPengurus);
+      }
+      
+      localStorage.setItem('osis_pengurus', JSON.stringify(pengurus));
+      
+      closeModal();
+      loadPengurus();
+      
+      // Show notification
+      showNotification('success', id ? 'Pengurus berhasil diupdate!' : 'Pengurus berhasil ditambahkan!');
+    }
+    
+    function deletePengurus(id) {
+      deleteId = id;
+      document.getElementById('modal-delete').classList.add('active');
+    }
+    
+    function closeDeleteModal() {
+      document.getElementById('modal-delete').classList.remove('active');
+      deleteId = null;
+    }
+    
+    function confirmDelete() {
+      if (!deleteId) return;
+      
+      let pengurus = JSON.parse(localStorage.getItem('osis_pengurus') || '[]');
+      pengurus = pengurus.filter(p => p.id !== deleteId);
+      localStorage.setItem('osis_pengurus', JSON.stringify(pengurus));
+      
+      closeDeleteModal();
+      loadPengurus();
+      showNotification('success', 'Pengurus berhasil dihapus!');
+    }
+    
+    function showNotification(type, message) {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type}`;
+      notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+      `;
+      notification.innerHTML = `
+        <span>${type === 'success' ? '✅' : 'ℹ️'}</span>
+        <span>${message}</span>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideInRight 0.3s ease reverse';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+    
+    function toggleSidebar() {
+      const sidebar = document.getElementById('admin-sidebar');
+      const overlay = document.getElementById('mobile-overlay');
+      
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+    
+    function logout() {
+      if (confirm('Apakah Anda yakin ingin logout?')) {
+        AuthManager.logout();
+      }
+    }
+  </script>
+</body>
+</html>
