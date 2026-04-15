@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Halaman Tidak Ditemukan | OSIS MTs Darul Hikam Cirebon</title>
+  <meta name="description" content="Halaman tidak ditemukan - OSIS MTs Darul Hikam Cirebon">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#1a5f2a',
+              light: '#2d7a3e',
+              dark: '#124a1f',
+            },
+            secondary: {
+              DEFAULT: '#d4af37',
+              light: '#e8c547',
+              dark: '#b8960c',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Poppins', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
+  <div class="text-center px-4">
+    <div class="text-9xl font-bold text-primary mb-4">404</div>
+    <h1 class="text-3xl font-bold mb-4">Halaman Tidak Ditemukan</h1>
+    <p class="text-gray-600 mb-8 max-w-md mx-auto">
+      Maaf, halaman yang Anda cari tidak ditemukan. Mungkin halaman telah dipindahkan atau dihapus.
+    </p>
+    <a href="/" class="btn btn-primary btn-lg inline-flex items-center gap-2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      Kembali ke Beranda
+    </a>
+  </div>
+</body>
+</html>
